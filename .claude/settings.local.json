@@ -11,5 +11,19 @@
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "python-sdk",
+    "docker",
+    "jupyter",
+    "postgresql",
+    "opik",
+    "memory-bank",
+    "sequential-thinking",
+    "brave-search",
+    "google-maps",
+    "deep-graph",
+    "context7"
+  ],
+  "enableAllProjectMcpServers": true
 }

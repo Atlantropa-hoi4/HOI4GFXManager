@@ -1304,7 +1304,7 @@ class GFXManager(QMainWindow):
     
     def init_ui(self):
         """UI 초기화"""
-        self.setWindowTitle("HOI4 GFX 통합 관리 도구")
+        self.setWindowTitle("HOI4 GFX Manager")
         self.setGeometry(100, 100, 1400, 900)
         
         # 메뉴바 설정
