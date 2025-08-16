@@ -1719,13 +1719,13 @@ class GFXManager(QMainWindow):
             
             content = '\n'.join(cleaned_lines)
             
-            # spriteType 블록 찾기
+            # spriteType 블록 찾기 (대소문자 구분 없음)
             sprite_pattern = r'spriteType\s*=\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}'
-            sprite_matches = re.findall(sprite_pattern, content, re.DOTALL)
+            sprite_matches = re.findall(sprite_pattern, content, re.DOTALL | re.IGNORECASE)
             
             for sprite_content in sprite_matches:
-                name_match = re.search(r'name\s*=\s*["\']?([^"\'}\s]+)["\']?', sprite_content)
-                texture_match = re.search(r'texturefile\s*=\s*["\']?([^"\'}\s]+)["\']?', sprite_content)
+                name_match = re.search(r'name\s*=\s*["\']?([^"\'}\s]+)["\']?', sprite_content, re.IGNORECASE)
+                texture_match = re.search(r'texturefile\s*=\s*["\']?([^"\'}\s]+)["\']?', sprite_content, re.IGNORECASE)
                 
                 if name_match and texture_match:
                     name = name_match.group(1).strip('"\'')
@@ -2681,10 +2681,10 @@ class GFXManager(QMainWindow):
             with open(gfx_file_path, 'r', encoding='utf-8-sig') as f:
                 content = f.read()
             
-            # GFX 정의 찾아서 texturefile 경로 교체
+            # GFX 정의 찾아서 texturefile 경로 교체 (대소문자 구분 없음)
             pattern = rf'({re.escape(gfx_name)}\s*=\s*\{{[^}}]*?)texturefile\s*=\s*"[^"]*"'
             replacement = rf'\1texturefile = "{new_path}"'
-            content = re.sub(pattern, replacement, content, flags=re.DOTALL | re.MULTILINE)
+            content = re.sub(pattern, replacement, content, flags=re.DOTALL | re.MULTILINE | re.IGNORECASE)
             
             with open(gfx_file_path, 'w', encoding='utf-8-sig') as f:
                 f.write(content)
