@@ -1605,6 +1605,14 @@ class GFXManager(QMainWindow):
             delete_action = menu.addAction("삭제")
             delete_action.triggered.connect(self.delete_selected_gfx)
             
+            # 대소문자 수정 옵션 추가
+            gfx_name = item.text(0)
+            gfx_info = self.gfx_data.get(gfx_name)
+            if gfx_info and gfx_info.get('case_issue', False):
+                menu.addSeparator()
+                fix_case_action = menu.addAction("대소문자 수정")
+                fix_case_action.triggered.connect(lambda: self.fix_case_mismatch(gfx_name))
+            
             menu.addSeparator()
             
             open_file_action = menu.addAction("GFX 파일 열기")
@@ -1725,7 +1733,18 @@ class GFXManager(QMainWindow):
             
             for sprite_content in sprite_matches:
                 name_match = re.search(r'name\s*=\s*["\']?([^"\'}\s]+)["\']?', sprite_content)
-                texture_match = re.search(r'texturefile\s*=\s*["\']?([^"\'}\s]+)["\']?', sprite_content)
+                
+                # texturefile 대소문자 변형 모두 검색
+                texture_match = None
+                texture_file_variants = ['texturefile', 'textureFile', 'TextureFile', 'TEXTUREFILE']
+                found_variant = None
+                
+                for variant in texture_file_variants:
+                    pattern = rf'{variant}\s*=\s*["\']?([^"\'}\s]+)["\']?'
+                    texture_match = re.search(pattern, sprite_content)
+                    if texture_match:
+                        found_variant = variant
+                        break
                 
                 if name_match and texture_match:
                     name = name_match.group(1).strip('"\'')
@@ -1733,6 +1752,12 @@ class GFXManager(QMainWindow):
                     
                     full_texture_path = os.path.join(self.mod_folder_path, texture_path)
                     status = 'valid' if os.path.exists(full_texture_path) else 'missing_file'
+                    
+                    # 대소문자 불일치 검사
+                    case_issue = False
+                    if found_variant != 'texturefile':
+                        status = 'case_mismatch'
+                        case_issue = True
                     
                     if name in self.gfx_data:
                         status = 'duplicate'
@@ -1745,7 +1770,9 @@ class GFXManager(QMainWindow):
                         'texturefile': full_texture_path,
                         'file_source': str(gfx_file_path),
                         'status': status,
-                        'relative_path': texture_path
+                        'relative_path': texture_path,
+                        'texture_variant': found_variant,
+                        'case_issue': case_issue
                     }
                     
         except Exception as e:
@@ -1770,6 +1797,8 @@ class GFXManager(QMainWindow):
             elif status == 'missing_file' and not self.show_missing_cb.isChecked():
                 continue
             elif status == 'duplicate' and not self.show_duplicate_cb.isChecked():
+                continue
+            elif status == 'case_mismatch' and not self.show_missing_cb.isChecked():  # case_mismatch도 문제로 간주
                 continue
             elif name in self.orphaned_gfx and not self.show_orphaned_cb.isChecked():
                 continue
@@ -1806,6 +1835,8 @@ class GFXManager(QMainWindow):
                     status_text = "ERROR"
                 elif status == 'duplicate':
                     status_text = "DUPLICATE"
+                elif status == 'case_mismatch':
+                    status_text = "CASE_ERROR"
                 elif name in self.orphaned_gfx:
                     status_text = "UNUSED"
                 else:
@@ -1820,6 +1851,9 @@ class GFXManager(QMainWindow):
                 elif status == 'duplicate':
                     gfx_item.setBackground(0, QColor(255, 255, 200))
                     gfx_item.setBackground(1, QColor(255, 255, 200))
+                elif status == 'case_mismatch':
+                    gfx_item.setBackground(0, QColor(255, 150, 100))  # 주황색으로 대소문자 오류 표시
+                    gfx_item.setBackground(1, QColor(255, 150, 100))
                 elif name in self.orphaned_gfx:
                     gfx_item.setBackground(0, QColor(200, 200, 255))
                     gfx_item.setBackground(1, QColor(200, 200, 255))
@@ -1867,6 +1901,10 @@ class GFXManager(QMainWindow):
         info_text += f"파일 소스: {gfx_info['file_source']}\n"
         info_text += f"텍스처 경로: {gfx_info['relative_path']}\n"
         info_text += f"상태: {gfx_info['status']}\n"
+        
+        # 대소문자 불일치 정보 표시
+        if gfx_info.get('case_issue', False):
+            info_text += f"⚠️ 대소문자 오류: '{gfx_info.get('texture_variant', '')}' -> 'texturefile'로 수정 필요\n"
         
         if gfx_name in self.usage_locations:
             info_text += f"사용처: {len(self.usage_locations[gfx_name])}개 파일\n"
@@ -2366,6 +2404,45 @@ class GFXManager(QMainWindow):
             except Exception as e:
                 QMessageBox.warning(self, "오류", f"파일을 열 수 없습니다: {str(e)}")
     
+    def fix_case_mismatch(self, gfx_name):
+        """대소문자 불일치 수정"""
+        gfx_info = self.gfx_data.get(gfx_name)
+        if not gfx_info or not gfx_info.get('case_issue', False):
+            return
+        
+        file_path = gfx_info['file_source']
+        wrong_variant = gfx_info.get('texture_variant', '')
+        
+        try:
+            # 파일 읽기
+            with open(file_path, 'r', encoding='utf-8-sig') as file:
+                content = file.read()
+            
+            # 잘못된 대소문자를 올바른 형태로 교체
+            pattern = rf'(\s*{re.escape(wrong_variant)}\s*=)'
+            replacement = r'\1'.replace(wrong_variant, 'texturefile')
+            
+            # 좀 더 정확한 교체를 위해 spriteType 블록 내에서만 교체
+            sprite_pattern = rf'(spriteType\s*=\s*\{{[^{{}}]*name\s*=\s*["\']?{re.escape(gfx_name)}["\']?[^{{}}]*?){re.escape(wrong_variant)}(\s*=)'
+            new_content = re.sub(sprite_pattern, rf'\1texturefile\2', content, flags=re.DOTALL | re.IGNORECASE)
+            
+            # 파일 쓰기
+            with open(file_path, 'w', encoding='utf-8-sig') as file:
+                file.write(new_content)
+            
+            # 데이터 업데이트
+            gfx_info['texture_variant'] = 'texturefile'
+            gfx_info['case_issue'] = False
+            gfx_info['status'] = 'valid' if os.path.exists(gfx_info['texturefile']) else 'missing_file'
+            
+            # UI 업데이트
+            self.update_gfx_list()
+            
+            QMessageBox.information(self, "성공", f"'{gfx_name}'의 대소문자 오류가 수정되었습니다.")
+            
+        except Exception as e:
+            QMessageBox.critical(self, "오류", f"파일 수정 중 오류가 발생했습니다: {str(e)}")
+
     def open_texture_folder(self):
         """텍스처 폴더 열기"""
         current_item = self.gfx_tree.currentItem()
