@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "WebFetch(domain:hoi4.paradoxwikis.com)",
+      "Bash(sed:*)",
+      "Bash(grep:*)",
+      "Bash(del debug_parser.py temp_parser_fix.py)",
+      "Bash(rm:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
