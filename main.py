@@ -28,7 +28,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                             QGroupBox, QProgressBar, QDialog, QFormLayout,
                             QComboBox, QSpinBox, QDialogButtonBox, QTreeWidget,
                             QTreeWidgetItem, QMenu, QMenuBar, QStatusBar,
-                            QToolBar, QScrollArea, QFrame)
+                            QToolBar, QScrollArea, QFrame, QRadioButton)
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QSettings, QUrl, QMimeData
 from PyQt6.QtGui import QPixmap, QColor, QAction, QIcon, QPalette, QDragEnterEvent, QDropEvent
 from PIL import Image
@@ -870,6 +870,36 @@ class BatchImportDialog(QDialog):
         
         layout.addWidget(options_group)
         
+        # 이미지 저장 경로 설정
+        path_group = QGroupBox("이미지 파일 저장 경로")
+        path_layout = QVBoxLayout()
+        path_group.setLayout(path_layout)
+        
+        # 저장 방식 선택
+        save_option_layout = QHBoxLayout()
+        self.copy_to_mod_rb = QRadioButton("모드 폴더로 복사")
+        self.copy_to_mod_rb.setChecked(True)
+        self.use_original_path_rb = QRadioButton("원본 경로 사용")
+        save_option_layout.addWidget(self.copy_to_mod_rb)
+        save_option_layout.addWidget(self.use_original_path_rb)
+        path_layout.addLayout(save_option_layout)
+        
+        # 복사 대상 폴더 선택
+        self.dest_folder_layout = QHBoxLayout()
+        self.dest_folder_edit = QLineEdit("gfx/interface")
+        self.dest_folder_btn = QPushButton("찾아보기...")
+        self.dest_folder_btn.clicked.connect(self.select_dest_folder)
+        self.dest_folder_layout.addWidget(QLabel("저장 폴더 (모드 폴더 기준):"))
+        self.dest_folder_layout.addWidget(self.dest_folder_edit)
+        self.dest_folder_layout.addWidget(self.dest_folder_btn)
+        path_layout.addLayout(self.dest_folder_layout)
+        
+        # 라디오 버튼 이벤트 연결
+        self.copy_to_mod_rb.toggled.connect(self.on_save_option_changed)
+        self.use_original_path_rb.toggled.connect(self.on_save_option_changed)
+        
+        layout.addWidget(path_group)
+        
         # 미리보기
         self.preview_text = QTextEdit()
         self.preview_text.setReadOnly(True)
@@ -884,6 +914,7 @@ class BatchImportDialog(QDialog):
         
         self.folder_edit.textChanged.connect(self.update_preview)
         self.prefix_edit.textChanged.connect(self.update_preview)
+        self.dest_folder_edit.textChanged.connect(self.update_preview)
         
     def select_folder(self):
         """폴더 선택"""
@@ -895,6 +926,44 @@ class BatchImportDialog(QDialog):
         folder = QFileDialog.getExistingDirectory(self, "소스 폴더 선택", default_path)
         if folder:
             self.folder_edit.setText(folder)
+    
+    def select_dest_folder(self):
+        """저장 대상 폴더 선택"""
+        # 모드 폴더가 설정되어 있다면 기본 경로로 사용
+        parent = self.parent()
+        if hasattr(parent, 'mod_folder_path') and parent.mod_folder_path:
+            default_path = parent.mod_folder_path
+        else:
+            default_path = os.path.expanduser("~/Documents")
+        
+        folder = QFileDialog.getExistingDirectory(self, "저장 폴더 선택", default_path)
+        if folder:
+            # 모드 폴더 기준 상대 경로로 변환
+            if hasattr(parent, 'mod_folder_path') and parent.mod_folder_path:
+                try:
+                    relative_path = os.path.relpath(folder, parent.mod_folder_path)
+                    # 상위 폴더로 나가는 경우 절대 경로 사용
+                    if relative_path.startswith('..'):
+                        self.dest_folder_edit.setText(folder)
+                    else:
+                        self.dest_folder_edit.setText(relative_path)
+                except ValueError:
+                    # 다른 드라이브인 경우 절대 경로 사용
+                    self.dest_folder_edit.setText(folder)
+            else:
+                self.dest_folder_edit.setText(folder)
+    
+    def on_save_option_changed(self):
+        """저장 방식 변경 시 호출"""
+        is_copy_mode = self.copy_to_mod_rb.isChecked()
+        
+        # 복사 모드일 때만 저장 폴더 설정 활성화
+        for i in range(self.dest_folder_layout.count()):
+            widget = self.dest_folder_layout.itemAt(i).widget()
+            if widget:
+                widget.setEnabled(is_copy_mode)
+        
+        self.update_preview()
     
     def update_preview(self):
         """미리보기 업데이트"""
@@ -918,7 +987,13 @@ class BatchImportDialog(QDialog):
         for image_file in image_files[:20]:  # 최대 20개만 미리보기
             relative_path = image_file.relative_to(folder)
             gfx_name = f"{prefix}{relative_path.stem}"
-            preview_text += f"- {gfx_name} → {relative_path}\n"
+            
+            # 저장 경로 표시
+            if self.copy_to_mod_rb.isChecked():
+                dest_path = os.path.join(self.dest_folder_edit.text(), image_file.name).replace('\\', '/')
+                preview_text += f"- {gfx_name} → {dest_path}\n"
+            else:
+                preview_text += f"- {gfx_name} → {relative_path}\n"
         
         if len(image_files) > 20:
             preview_text += f"\n... 및 {len(image_files) - 20}개 더"
@@ -931,7 +1006,9 @@ class BatchImportDialog(QDialog):
             'folder': self.folder_edit.text(),
             'prefix': self.prefix_edit.text(),
             'target_gfx_file': self.target_gfx_combo.currentText(),
-            'recursive': self.recursive_cb.isChecked()
+            'recursive': self.recursive_cb.isChecked(),
+            'copy_to_mod': self.copy_to_mod_rb.isChecked(),
+            'dest_folder': self.dest_folder_edit.text()
         }
 
 
@@ -2232,6 +2309,8 @@ class GFXManager(QMainWindow):
             prefix = data['prefix']
             target_file = data['target_gfx_file']
             recursive = data['recursive']
+            copy_to_mod = data.get('copy_to_mod', False)
+            dest_folder = data.get('dest_folder', '')
             
             # 지원되는 이미지 형식들
             image_extensions = ['.dds', '.png', '.jpg', '.jpeg', '.bmp', '.tga']
@@ -2245,21 +2324,58 @@ class GFXManager(QMainWindow):
                 QMessageBox.information(self, "알림", "선택한 폴더에서 지원되는 이미지 파일을 찾을 수 없습니다.")
                 return
             
+            copied_files = 0
+            failed_copies = []
+            
             for image_file in image_files:
                 relative_path = image_file.relative_to(folder)
                 gfx_name = f"{prefix}{relative_path.stem}"
                 
-                # 모드 폴더 기준 상대 경로 계산
-                full_path = str(image_file)
-                if self.mod_folder_path in full_path:
-                    mod_relative = os.path.relpath(full_path, self.mod_folder_path)
+                # 이미지 파일 경로 처리
+                if copy_to_mod and self.mod_folder_path:
+                    # 모드 폴더로 복사
+                    try:
+                        dest_path = Path(self.mod_folder_path) / dest_folder / image_file.name
+                        dest_path.parent.mkdir(parents=True, exist_ok=True)
+                        
+                        # 파일 복사
+                        import shutil
+                        shutil.copy2(image_file, dest_path)
+                        
+                        # GFX 파일에는 모드 폴더 기준 상대 경로 저장
+                        mod_relative = os.path.relpath(str(dest_path), self.mod_folder_path).replace('\\', '/')
+                        copied_files += 1
+                        
+                    except Exception as e:
+                        failed_copies.append(f"{image_file.name}: {str(e)}")
+                        # 복사 실패 시 원본 경로 사용
+                        full_path = str(image_file)
+                        if self.mod_folder_path in full_path:
+                            mod_relative = os.path.relpath(full_path, self.mod_folder_path).replace('\\', '/')
+                        else:
+                            mod_relative = full_path.replace('\\', '/')
                 else:
-                    mod_relative = full_path
+                    # 원본 경로 사용
+                    full_path = str(image_file)
+                    if self.mod_folder_path in full_path:
+                        mod_relative = os.path.relpath(full_path, self.mod_folder_path).replace('\\', '/')
+                    else:
+                        mod_relative = full_path.replace('\\', '/')
                 
                 self.save_gfx_to_file(gfx_name, mod_relative, target_file)
             
             self.scan_gfx_files()
-            QMessageBox.information(self, "완료", f"{len(image_files)}개의 GFX가 추가되었습니다.")
+            
+            # 결과 메시지 표시
+            message = f"{len(image_files)}개의 GFX가 추가되었습니다."
+            if copy_to_mod:
+                message += f"\n복사된 파일: {copied_files}개"
+                if failed_copies:
+                    message += f"\n복사 실패: {len(failed_copies)}개"
+                    if len(failed_copies) <= 5:
+                        message += "\n" + "\n".join(failed_copies)
+            
+            QMessageBox.information(self, "완료", message)
             
         except Exception as e:
             QMessageBox.critical(self, "오류", f"일괄 임포트 중 오류: {str(e)}")
