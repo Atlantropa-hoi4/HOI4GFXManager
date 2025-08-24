@@ -426,12 +426,15 @@ class FocusGFXShineGenerator:
     
     def get_shine_definition(self, name, path):
         """Shine 정의 생성"""
+        # 모드 폴더 기준 상대 경로로 변환
+        rel_path = path.replace('\\', '/')
+        
         return f'''\tSpriteType = {{
 \t\tname = "{name}_shine"
-\t\ttexturefile = "{path}"
+\t\ttexturefile = "{rel_path}"
 \t\teffectFile = "gfx/FX/buttonstate.lua"
 \t\tanimation = {{
-\t\t\tanimationmaskfile = "{path}"
+\t\t\tanimationmaskfile = "{rel_path}"
 \t\t\tanimationtexturefile = "gfx/interface/goals/shine_overlay.dds"
 \t\t\tanimationrotation = -90.0
 \t\t\tanimationlooping = no
@@ -444,7 +447,7 @@ class FocusGFXShineGenerator:
 \t\t}}
 
 \t\tanimation = {{
-\t\t\tanimationmaskfile = "{path}"
+\t\t\tanimationmaskfile = "{rel_path}"
 \t\t\tanimationtexturefile = "gfx/interface/goals/shine_overlay.tga"
 \t\t\tanimationrotation = 90.0
 \t\t\tanimationlooping = no
@@ -2240,16 +2243,16 @@ class GFXManager(QMainWindow):
             if not os.path.isabs(gfx_file):
                 gfx_file = os.path.join(self.mod_folder_path, gfx_file)
             
-            # 상대 경로로 변환
+            # 모드 폴더 기준 상대 경로로 변환
             if os.path.isabs(texture_path):
-                rel_path = os.path.relpath(texture_path, self.mod_folder_path)
+                rel_path = os.path.relpath(texture_path, self.mod_folder_path).replace('\\', '/')
             else:
-                rel_path = texture_path
+                rel_path = texture_path.replace('\\', '/')
             
             gfx_entry = f'''
 \tspriteType = {{
 \t\tname = "{name}"
-\t\ttexturefile = "{rel_path.replace(os.sep, '/')}"
+\t\ttexturefile = "{rel_path}"
 \t}}'''
             
             with open(gfx_file, 'r', encoding='utf-8-sig') as f:
@@ -2797,9 +2800,15 @@ class GFXManager(QMainWindow):
             with open(gfx_file_path, 'r', encoding='utf-8-sig') as f:
                 content = f.read()
             
+            # 모드 폴더 기준 상대 경로로 변환
+            if os.path.isabs(new_path):
+                rel_new_path = os.path.relpath(new_path, self.mod_folder_path).replace('\\', '/')
+            else:
+                rel_new_path = new_path.replace('\\', '/')
+            
             # GFX 정의 찾아서 texturefile 경로 교체 (대소문자 구분 없음)
             pattern = rf'({re.escape(gfx_name)}\s*=\s*\{{[^}}]*?)texturefile\s*=\s*"[^"]*"'
-            replacement = rf'\1texturefile = "{new_path}"'
+            replacement = rf'\1texturefile = "{rel_new_path}"'
             content = re.sub(pattern, replacement, content, flags=re.DOTALL | re.MULTILINE | re.IGNORECASE)
             
             with open(gfx_file_path, 'w', encoding='utf-8-sig') as f:

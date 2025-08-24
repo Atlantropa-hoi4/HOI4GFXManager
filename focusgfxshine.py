@@ -27,6 +27,9 @@ import re
 
 
 def get_shine_def(name, path):
+    # 모드 폴더 기준 상대 경로로 변환
+    rel_path = path.replace('\\', '/')
+    
     return """	SpriteType = {
 		name = "%s_shine"
 		texturefile = "%s"
@@ -59,9 +62,9 @@ def get_shine_def(name, path):
 		legacy_lazy_load = no
 	}""" % (
         name,
-        path,
-        path,
-        path,
+        rel_path,
+        rel_path,
+        rel_path,
     )
 
 
