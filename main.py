@@ -35,9 +35,9 @@ from PIL import Image
 import cv2
 import numpy as np
 try:
-    from PIL_DDS_Extended import DdsImagePlugin
+    from PIL import DdsImagePlugin
 except ImportError:
-    print("Warning: Pillow-DDS-Extended is not installed. DDS files cannot be opened.")
+    print("Warning: DDS plugin not available. DDS files cannot be opened.")
 
 # GUI 프리뷰어 import
 from gui_previewer import GUIPreviewWidget
@@ -510,7 +510,7 @@ class FocusGFXShineGenerator:
             
             # 파일 저장
             if added_count > 0:
-                with open(goals_shine_file, 'w', encoding='utf-8-sig') as f:
+                with open(goals_shine_file, 'w', encoding='utf-8') as f:
                     f.write('\n'.join(goals_shine_split))
             
             return {
