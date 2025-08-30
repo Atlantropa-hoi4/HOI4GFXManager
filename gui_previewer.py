@@ -132,7 +132,7 @@ class ScriptedGUIParser:
                 return []
             
             try:
-                with open(file_path, 'r', encoding='utf-8-sig') as file:
+                with open(file_path, 'r', encoding='utf-8') as file:
                     content = file.read()
             except UnicodeDecodeError:
                 try:
@@ -642,7 +642,7 @@ class HOI4GUIParser:
             
             # 파일 읽기
             try:
-                with open(file_path, 'r', encoding='utf-8-sig') as file:
+                with open(file_path, 'r', encoding='utf-8') as file:
                     content = file.read()
             except UnicodeDecodeError:
                 try:
@@ -2295,7 +2295,7 @@ class GUIPreviewWidget(QWidget):
         
         # 파일 내용 표시
         try:
-            with open(file_path, 'r', encoding='utf-8-sig') as f:
+            with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             self.content_text.setText(content[:2000] + "..." if len(content) > 2000 else content)
         except Exception as e:

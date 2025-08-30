@@ -465,7 +465,7 @@ class FocusGFXShineGenerator:
         """Focus GFX와 Shine 파일 처리"""
         try:
             # Goals shine 파일 읽기
-            with open(goals_shine_file, 'r', encoding='utf-8-sig') as f:
+            with open(goals_shine_file, 'r', encoding='utf-8') as f:
                 goals_shine_content = f.read()
             
             # 기존 shine 항목 찾기
@@ -487,7 +487,7 @@ class FocusGFXShineGenerator:
             ]
             
             # Goals 파일 읽기
-            with open(goals_file, 'r', encoding='utf-8-sig') as f:
+            with open(goals_file, 'r', encoding='utf-8') as f:
                 goals_content = f.read()
             
             # Goals 매치 찾기
@@ -1140,7 +1140,7 @@ class AnalysisWorker(QThread):
         total_files = len(code_files)
         for i, code_file in enumerate(code_files):
             try:
-                with open(code_file, 'r', encoding='utf-8-sig') as f:
+                with open(code_file, 'r', encoding='utf-8') as f:
                     content = f.read()
                     
                 # 주석 제거 (라인별로 처리)
@@ -1786,7 +1786,7 @@ class GFXManager(QMainWindow):
     def parse_gfx_file(self, gfx_file_path):
         """GFX 파일 파싱"""
         try:
-            with open(gfx_file_path, 'r', encoding='utf-8-sig') as file:
+            with open(gfx_file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
             
             # 주석 제거
@@ -2255,7 +2255,7 @@ class GFXManager(QMainWindow):
 \t\ttexturefile = "{rel_path}"
 \t}}'''
             
-            with open(gfx_file, 'r', encoding='utf-8-sig') as f:
+            with open(gfx_file, 'r', encoding='utf-8') as f:
                 content = f.read()
             
             # spriteTypes 블록 찾아서 추가
@@ -2267,7 +2267,7 @@ class GFXManager(QMainWindow):
                 # spriteTypes 블록이 없으면 새로 생성
                 content += f'\n\nspriteTypes = {{{gfx_entry}\n}}\n'
             
-            with open(gfx_file, 'w', encoding='utf-8-sig') as f:
+            with open(gfx_file, 'w', encoding='utf-8') as f:
                 f.write(content)
                 
         except Exception as e:
@@ -2276,14 +2276,14 @@ class GFXManager(QMainWindow):
     def remove_gfx_from_file(self, name, gfx_file):
         """파일에서 GFX 제거"""
         try:
-            with open(gfx_file, 'r', encoding='utf-8-sig') as f:
+            with open(gfx_file, 'r', encoding='utf-8') as f:
                 content = f.read()
             
             # 해당 spriteType 블록 찾아서 제거
             pattern = rf'spriteType\s*=\s*\{{\s*name\s*=\s*["\']?{re.escape(name)}["\']?[^}}]*\}}'
             content = re.sub(pattern, '', content, flags=re.DOTALL)
             
-            with open(gfx_file, 'w', encoding='utf-8-sig') as f:
+            with open(gfx_file, 'w', encoding='utf-8') as f:
                 f.write(content)
                 
         except Exception as e:
@@ -2797,7 +2797,7 @@ class GFXManager(QMainWindow):
     def update_gfx_texture_path(self, gfx_name, new_path, gfx_file_path):
         """GFX 정의의 텍스처 경로 업데이트"""
         try:
-            with open(gfx_file_path, 'r', encoding='utf-8-sig') as f:
+            with open(gfx_file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             
             # 모드 폴더 기준 상대 경로로 변환
@@ -2811,7 +2811,7 @@ class GFXManager(QMainWindow):
             replacement = rf'\1texturefile = "{rel_new_path}"'
             content = re.sub(pattern, replacement, content, flags=re.DOTALL | re.MULTILINE | re.IGNORECASE)
             
-            with open(gfx_file_path, 'w', encoding='utf-8-sig') as f:
+            with open(gfx_file_path, 'w', encoding='utf-8') as f:
                 f.write(content)
                 
         except Exception as e:
