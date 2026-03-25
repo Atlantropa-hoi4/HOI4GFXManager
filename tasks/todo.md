@@ -37,12 +37,13 @@
 - [ ] Add automated verification
   - Added a baseline `scripts/check.ps1` wrapper for `python -m compileall`
   - Next add focused parser/service tests that avoid full GUI boot
-  - Add unit tests around DDS conversion behavior, GFX file rewrite behavior, and GUI parser extraction
+  - Added DDS regression coverage for encoder failure, invalid header output, valid DDS header retention, and `convert_image()` error propagation
+  - Next add unit tests around GFX file rewrite behavior and GUI parser extraction
   - Add CI for lint, static compile, and tests on Windows
 
 ## Refactor Plan
 - [ ] Phase 1: stabilize correctness before reshaping architecture
-  - Replace fake DDS fallback behavior with explicit failure or a validated conversion backend
+  - Replaced fake DDS fallback behavior with explicit failure plus DDS header validation and failed-output cleanup
   - Guard file rewrite operations with parser-style block handling and backup-safe writes
   - Replace silent prints with structured logging plus GUI-facing error reporting
 - [ ] Phase 2: extract non-UI services from `main.py`
@@ -68,7 +69,7 @@
 
 ## Recommended Execution Order
 - [x] 1. Add packaging and environment bootstrap files so the project becomes runnable and testable again
-- [ ] 2. Fix the DDS fallback defect and add regression coverage
+- [x] 2. Fix the DDS fallback defect and add regression coverage
 - [ ] 3. Add `.gitignore`, stop tracking bytecode, and establish baseline compile/test commands
 - [ ] 4. Extract `ImageConverter` and GFX file persistence into services
 - [ ] 5. Extract analysis worker logic behind a pure service boundary
@@ -80,4 +81,5 @@
 - [x] Concrete risks identified with line anchors for follow-up implementation
 - [x] Modernization plan written as an ordered checklist with verification gates
 - [x] Stage 1 executed: added `pyproject.toml`, bootstrap/run/check PowerShell scripts, and aligned README installation guidance
-- [x] Residual limitation: runtime verification is still blocked in this environment because no Python interpreter is available on PATH
+- [x] Stage 2 executed: DDS conversion now fails closed, removes invalid output, and has regression tests under `tests/test_dds_conversion.py`
+- [x] Residual limitation: runtime verification is still blocked in this environment because no Python interpreter is available on PATH, so Gate 2 remains unproven locally

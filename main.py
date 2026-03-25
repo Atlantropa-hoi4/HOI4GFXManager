@@ -45,6 +45,8 @@ from gui_previewer import GUIPreviewWidget
 
 class ImageConverter:
     """이미지 일괄 변환 클래스"""
+
+    DDS_MAGIC = b'DDS '
     
     # DDS 포맷 옵션
     DDS_FORMATS = {
@@ -126,19 +128,22 @@ class ImageConverter:
                 img_bgra = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
             
             # OpenCV로 저장 (기본 DDS 저장)
-            # 주의: OpenCV의 DDS 지원은 제한적이므로 기본 포맷 사용
             success = cv2.imwrite(output_path, img_bgra)
             if not success:
-                # OpenCV 실패 시 PIL로 대체 (PNG로 저장 후 확장자만 변경)
-                temp_path = output_path.replace('.dds', '.png')
-                img.save(temp_path, 'PNG')
-                # 파일 이름 변경
-                import shutil
-                shutil.move(temp_path, output_path)
-            
+                raise RuntimeError(f"OpenCV failed to write DDS data for '{dds_format}'.")
+
+            # 변환 backend가 잘못된 포맷을 내보내지 않았는지 헤더로 검증한다.
+            with open(output_path, 'rb') as dds_file:
+                if dds_file.read(4) != self.DDS_MAGIC:
+                    raise RuntimeError(
+                        f"DDS conversion produced non-DDS data for '{dds_format}'."
+                    )
         except Exception as e:
-            # 마지막 대안: PIL로 저장
-            img.save(output_path, 'PNG')
+            try:
+                Path(output_path).unlink(missing_ok=True)
+            except OSError:
+                pass
+            raise RuntimeError(f"DDS conversion failed: {e}") from e
     
     def batch_convert(self, file_list, output_dir, output_format='PNG', dds_format='RGBA', quality=95):
         """일괄 변환"""
