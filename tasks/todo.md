@@ -31,12 +31,12 @@
 - [x] Choose and document a supported Python baseline
   - Standardized the current support target on Python 3.13.x
   - Documented that Python 3.14 validation is deferred to a later phase
-- [ ] Add repository hygiene defaults
-  - Add `.gitignore` for `__pycache__/`, virtual environments, editor state, and generated reports
-  - Remove tracked bytecode from version control in a separate cleanup change
+- [x] Add repository hygiene defaults
+  - Added `.gitignore` for `__pycache__/`, virtual environments, editor state, and generated reports
+  - Removed tracked bytecode artifacts from git index while leaving local files untouched
 - [ ] Add automated verification
-  - Added a baseline `scripts/check.ps1` wrapper for `python -m compileall`
-  - Next add focused parser/service tests that avoid full GUI boot
+  - Expanded `scripts/check.ps1` into a baseline compile-plus-test command
+  - Added focused parser-free DDS regression tests that avoid full GUI boot
   - Added DDS regression coverage for encoder failure, invalid header output, valid DDS header retention, and `convert_image()` error propagation
   - Next add unit tests around GFX file rewrite behavior and GUI parser extraction
   - Add CI for lint, static compile, and tests on Windows
@@ -70,7 +70,7 @@
 ## Recommended Execution Order
 - [x] 1. Add packaging and environment bootstrap files so the project becomes runnable and testable again
 - [x] 2. Fix the DDS fallback defect and add regression coverage
-- [ ] 3. Add `.gitignore`, stop tracking bytecode, and establish baseline compile/test commands
+- [x] 3. Add `.gitignore`, stop tracking bytecode, and establish baseline compile/test commands
 - [ ] 4. Extract `ImageConverter` and GFX file persistence into services
 - [ ] 5. Extract analysis worker logic behind a pure service boundary
 - [ ] 6. Split `gui_previewer.py` into parser, model, renderer, and widget modules
@@ -82,4 +82,5 @@
 - [x] Modernization plan written as an ordered checklist with verification gates
 - [x] Stage 1 executed: added `pyproject.toml`, bootstrap/run/check PowerShell scripts, and aligned README installation guidance
 - [x] Stage 2 executed: DDS conversion now fails closed, removes invalid output, and has regression tests under `tests/test_dds_conversion.py`
-- [x] Residual limitation: runtime verification is still blocked in this environment because no Python interpreter is available on PATH, so Gate 2 remains unproven locally
+- [x] Stage 3 executed: added `.gitignore`, removed tracked `__pycache__` artifacts from git, and set `scripts/check.ps1` to run compile plus unittest discovery
+- [x] Residual limitation: runtime verification is still blocked in this environment because no Python interpreter is available on PATH, so Gates 1 and 2 remain unproven locally

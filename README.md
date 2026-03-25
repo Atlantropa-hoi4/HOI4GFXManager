@@ -142,6 +142,10 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1
 ```
 
+위 검증은 아래 순서로 실행됩니다.
+- `python -m compileall main.py gui_previewer.py focusgfxshine.py`
+- `python -m unittest discover -s tests -p "test_*.py"`
+
 ### Python 경로를 직접 지정해야 할 때
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1 -PythonExe C:\Path\To\python.exe -IncludeDev

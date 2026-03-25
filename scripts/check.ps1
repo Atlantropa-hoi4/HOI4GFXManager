@@ -10,6 +10,7 @@ if (-not (Test-Path $PythonExe)) {
 Push-Location $RepoRoot
 try {
     & $PythonExe -m compileall main.py gui_previewer.py focusgfxshine.py
+    & $PythonExe -m unittest discover -s tests -p "test_*.py"
 }
 finally {
     Pop-Location
