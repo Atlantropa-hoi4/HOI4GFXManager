@@ -39,9 +39,6 @@ try:
 except ImportError:
     print("Warning: DDS plugin not available. DDS files cannot be opened.")
 
-# GUI 프리뷰어 import
-from gui_previewer import GUIPreviewWidget
-
 
 class ImageConverter:
     """이미지 일괄 변환 클래스"""
@@ -1436,11 +1433,7 @@ class GFXManager(QMainWindow):
         project_tab = QWidget()
         tab_widget.addTab(project_tab, "프로젝트")
         self.setup_project_tab(project_tab)
-        
-        # GUI 프리뷰 탭
-        self.gui_preview_widget = GUIPreviewWidget(mod_folder_path=self.mod_folder_path)
-        tab_widget.addTab(self.gui_preview_widget, "GUI 프리뷰")
-        
+
         # 진행률 표시
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
@@ -1757,9 +1750,6 @@ class GFXManager(QMainWindow):
         folder_path = QFileDialog.getExistingDirectory(self, "HOI4 모드 폴더 선택", default_path)
         if folder_path:
             self.mod_folder_path = folder_path
-            # GUI 프리뷰어에도 모드 폴더 경로 업데이트
-            if hasattr(self, 'gui_preview_widget'):
-                self.gui_preview_widget.mod_folder_path = self.mod_folder_path
             self.scan_gfx_files()
     
     def scan_gfx_files(self):
@@ -1781,7 +1771,6 @@ class GFXManager(QMainWindow):
                 self.parse_gfx_file(gfx_file)
             
             self.update_gfx_list()
-            self.update_gui_preview_data()
             self.update_statistics_cards()  # 통계 카드 업데이트
             self.status_bar.showMessage(f"{len(gfx_files)}개의 .gfx 파일에서 {len(self.gfx_data)}개의 GFX를 찾았습니다.")
             
@@ -2426,9 +2415,6 @@ class GFXManager(QMainWindow):
                 path = dialog.selected_project['path']
                 if os.path.exists(path):
                     self.mod_folder_path = path
-                    # GUI 프리뷰어에도 모드 폴더 경로 업데이트
-                    if hasattr(self, 'gui_preview_widget'):
-                        self.gui_preview_widget.mod_folder_path = self.mod_folder_path
                     self.scan_gfx_files()
                 else:
                     QMessageBox.warning(self, "경고", "프로젝트 경로가 존재하지 않습니다.")
@@ -2821,17 +2807,6 @@ class GFXManager(QMainWindow):
                 
         except Exception as e:
             print(f"텍스처 경로 업데이트 중 오류: {str(e)}")
-    
-    def update_gui_preview_data(self):
-        """GUI 프리뷰어에 GFX 데이터 전달"""
-        # GFX 데이터를 GUI 프리뷰어가 기대하는 형식으로 변환
-        # gfx_name -> image_path 매핑으로 변환
-        preview_data = {}
-        for name, info in self.gfx_data.items():
-            if info['status'] == 'valid':  # 유효한 파일만 전달
-                preview_data[name] = info['texturefile']
-        
-        self.gui_preview_widget.set_gfx_data(preview_data)
     
     def update_status(self):
         """상태바 업데이트"""

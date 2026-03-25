@@ -41,4 +41,4 @@ hoi4-gfx-manager = "main:main"
 hoi4-focus-shine = "focusgfxshine:main"
 
 [tool.setuptools]
-py-modules = ["main", "gui_previewer", "focusgfxshine"]
+py-modules = ["main", "focusgfxshine"]

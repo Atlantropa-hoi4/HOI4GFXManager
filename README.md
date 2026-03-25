@@ -23,12 +23,6 @@ HOI4 GFX Manager는 Hearts of Iron 4 모드 개발을 위한 **올인원 GFX 관
 - **스마트 알파 채널 처리**: 포맷별 최적화된 투명도 관리
 - **일괄 변환**: 폴더 단위 대량 처리
 
-### **GUI 프리뷰 시스템 (미완성)**
-- **실시간 GUI 미리보기**: .gui 파일 시각화
-- **Scripted GUI 지원**: HOI4 고급 기능 완벽 호환
-- **GFX 연동**: 실제 텍스처와 연결된 미리보기
-- **고도화된 HOI4 문법**: 애니메이션, 조건문, 효과 등 지원
-
 ### **생산성 도구**
 - **드래그 앤 드롭**: 이미지 파일을 바로 끌어다 GFX 생성
 - **Focus GFX Shine 생성기**: 누락된 Shine 효과 자동 생성
@@ -66,16 +60,6 @@ HOI4 GFX Manager는 Hearts of Iron 4 모드 개발을 위한 **올인원 GFX 관
 | **품질 옵션** | JPG 품질 설정, PNG 최적화 |
 | **일괄 처리** | 폴더 단위 대량 변환 |
 | **진행률 표시** | 실시간 변환 상태 및 결과 확인 |
-
-### **GUI 프리뷰 & 검증**
-| GUI 기능 | 설명 |
-|----------|------|
-| **GUI 파일 파싱** | windowType, iconType, buttonType 등 완벽 지원 |
-| **시각적 렌더링** | 실제 HOI4와 유사한 레이아웃 미리보기 |
-| **Scripted GUI** | 동적 GUI 요소, 조건문, 효과 등 고급 기능 |
-| **GFX 연동** | 실제 텍스처 파일과 연결된 미리보기 |
-| **오류 감지** | GUI 정의 오류 자동 탐지 및 상세 리포트 |
-| **상대 경로 표시** | 모드 폴더 기준 깔끔한 경로 표시 |
 
 ### **사용자 경험**
 | UX 기능 | 내용 |
@@ -143,7 +127,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1
 ```
 
 위 검증은 아래 순서로 실행됩니다.
-- `python -m compileall main.py gui_previewer.py focusgfxshine.py`
+- `python -m compileall main.py focusgfxshine.py`
 - `python -m unittest discover -s tests -p "test_*.py"`
 
 ### Python 경로를 직접 지정해야 할 때
@@ -175,11 +159,6 @@ powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1 -PythonExe C:\P
 2. 변환할 **파일 또는 폴더** 선택
 3. **DDS 포맷** 설정 후 변환 실행
 
-#### **GUI 미리보기**
-1. `GUI 프리뷰` 탭 선택
-2. `.gui` 파일 로드
-3. **Scripted GUI** 파일 추가 연동 (선택사항)
-
 ### 버그 리포트
 - **재현 가능한 단계** 포함
 - **에러 메시지** 전체 복사
@@ -195,12 +174,10 @@ powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1 -PythonExe C:\P
 ### v2.1 (최신)
 - [x] **GFX 일괄 변환 도구** 추가
 - [x] **자기 파일 참조 제외** 로직 개선
-- [x] **Scripted GUI 고도화** 지원
 - [x] **상대 경로 표시** 통합 적용
 - [x] **성능 최적화** 및 안정성 향상
 
 ### v2.0
-- [x] **GUI 프리뷰 시스템** 구축
 - [x] **고급 사용처 분석** 엔진
 - [x] **드래그 앤 드롭** 지원
 - [x] **프로젝트 관리** 기능
@@ -212,7 +189,6 @@ powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1 -PythonExe C:\P
 
 
 ## **TODO**
-- [ ] 미완성된 Scripted GUI 도구 제거
 - [ ] 전면 코드 리팩토링 및 불필요 기능 제거
 - [ ] 버전 정리
 

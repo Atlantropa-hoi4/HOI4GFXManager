@@ -83,12 +83,6 @@ def ensure_dependency_stubs():
         sys.modules["PIL.Image"] = image_module
         sys.modules["PIL.DdsImagePlugin"] = dds_module
 
-    if "gui_previewer" not in sys.modules:
-        previewer_module = types.ModuleType("gui_previewer")
-        previewer_module.GUIPreviewWidget = DummyQtClass
-        sys.modules["gui_previewer"] = previewer_module
-
-
 ensure_dependency_stubs()
 main = importlib.import_module("main")
 
