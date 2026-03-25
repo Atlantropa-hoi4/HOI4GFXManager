@@ -108,31 +108,43 @@ HOI4 GFX Manager는 Hearts of Iron 4 모드 개발을 위한 **올인원 GFX 관
 
 ### 최소 요구사항
 - **OS**: Windows 10 이상
-- **Python**: 3.8 이상
+- **Python**: 3.13.x
 - **메모리**: 4GB RAM
 - **저장공간**: 500MB
 
 ### 권장 사양
 - **OS**: Windows 11
-- **Python**: 3.10 이상
+- **Python**: 3.13.x
 - **메모리**: 8GB RAM 이상
 - **저장공간**: 1GB 이상
 
 ## **설치 방법**
 
-### 필수 라이브러리 설치
-```bash
-pip install PyQt6 Pillow opencv-python numpy pywavelets
+2026-03-25 기준 공식 최신 Python은 3.14.3이지만, 이 저장소의 지원 기준선은 **Python 3.13.x** 입니다. 3.14 검증은 후속 단계에서 진행합니다.
+
+### 권장 부트스트랩
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1 -IncludeDev
 ```
 
-### 선택적 라이브러리 (DDS 지원 강화)
-```bash
-pip install Pillow-DDS-Extended
-```
+위 스크립트는 아래 작업을 한 번에 처리합니다.
+- `.venv` 가상환경 생성
+- `pip`, `setuptools`, `wheel` 업그레이드
+- `pip install -e .[dev]` 실행
 
 ### 실행
-```bash
-python main.py
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run.ps1
+```
+
+### 기본 검증
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\check.ps1
+```
+
+### Python 경로를 직접 지정해야 할 때
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1 -PythonExe C:\Path\To\python.exe -IncludeDev
 ```
 
 ## **사용 가이드**
