@@ -84,7 +84,13 @@ def ensure_dependency_stubs():
         sys.modules["PIL.DdsImagePlugin"] = dds_module
 
 ensure_dependency_stubs()
-main = importlib.import_module("main")
+
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+_SRC_PATH = os.path.join(_REPO_ROOT, "src")
+if _SRC_PATH not in sys.path:
+    sys.path.insert(0, _SRC_PATH)
+
+main = importlib.import_module("hoi4_gfx_manager.services.image_conversion")
 
 
 class FakeImage:

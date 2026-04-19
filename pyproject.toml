@@ -37,8 +37,11 @@ dev = [
 ]
 
 [project.scripts]
-hoi4-gfx-manager = "main:main"
+hoi4-gfx-manager = "hoi4_gfx_manager.app:main"
 hoi4-focus-shine = "focusgfxshine:main"
 
 [tool.setuptools]
-py-modules = ["main", "focusgfxshine"]
+py-modules = ["focusgfxshine"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
